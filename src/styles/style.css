@@ -1,0 +1,34 @@
+.cc-3d__upload-button {
+  color: rgb(99, 99, 99);
+  margin-bottom: 1rem;
+  text-align: center;
+  cursor: pointer;
+  border-width: 2px;
+  border-style: solid;
+  border-color: rgb(244, 244, 244);
+  border-image: initial;
+  background: rgb(245, 245, 245);
+  padding: 1rem;
+  display: inline-block;
+}
+
+.cc-3d__modelviewer-container {
+  background: rgb(245, 245, 245);
+  width: 75%;
+}
+
+.cc-3d__modelviewer-container.active {
+  background: transparent;
+}
+
+.cc-3d__modelviewer-container.active canvas {
+  border: 1px solid rgb(244, 244, 244);
+}
+
+.cc-3d__info-box {
+  color: rgb(138, 138, 138);
+}
+
+.cc-3d__info-box.active {
+  margin: 1rem 0;
+}

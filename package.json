@@ -1,0 +1,37 @@
+{
+  "name": "cc-3d",
+  "sideEffects": [
+    "*.scss"
+  ],
+  "version": "1.0.0",
+  "description": "ConvertCalculator 3D Model Viewer Plugin",
+  "private": true,
+  "scripts": {
+    "start": "webpack-dev-server --config webpack.dev.js",
+    "build": "webpack --config webpack.prod.js"
+  },
+  "author": "Joris de Ruiter",
+  "devDependencies": {
+    "babel-core": "^6.26.3",
+    "babel-loader": "^7.1.4",
+    "babel-preset-env": "^1.7.0",
+    "clean-webpack-plugin": "^0.1.19",
+    "css-loader": "^0.28.11",
+    "extract-loader": "^2.0.1",
+    "html-loader": "^0.5.5",
+    "html-webpack-plugin": "^3.2.0",
+    "mini-css-extract-plugin": "^0.4.0",
+    "optimize-css-assets-webpack-plugin": "^4.0.2",
+    "style-loader": "^0.21.0",
+    "uglifyjs-webpack-plugin": "^1.2.7",
+    "webpack": "^4.12.0",
+    "webpack-cli": "^3.0.3",
+    "webpack-dev-middleware": "^3.1.3",
+    "webpack-dev-server": "^3.1.4"
+  },
+  "dependencies": {
+    "number-formatter": "^1.2.0",
+    "three": "^0.94.0",
+    "three-trackballcontrols": "^0.0.7"
+  }
+}
