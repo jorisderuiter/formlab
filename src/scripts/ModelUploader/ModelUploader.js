@@ -2,18 +2,21 @@ import React, { Component, Fragment } from 'react';
 
 import ModelViewer from '../ModelViewer';
 
-import { getAreaLabel, getVolumeLabel, getBase64File } from './helpers';
+import { getAreaLabel, getDimensionsLabel, getVolumeLabel, getBase64File } from './helpers';
 
 class ModelUploader extends Component {
   constructor(props) {
     super(props);
 
+    this.handleChangeMaterial = this.handleChangeMaterial.bind(this);
     this.handleChangeModeledIn = this.handleChangeModeledIn.bind(this);
     this.handleInitModelViewer = this.handleInitModelViewer.bind(this);
     this.handeOnUploadModel = this.handeOnUploadModel.bind(this);
 
     this.state = {
       area: undefined,
+      dimensions: { x: undefined, y: undefined, z: undefined },
+      material: 'solid',
       modeledIn: 'mm',
       volume: undefined,
     }
@@ -30,6 +33,14 @@ class ModelUploader extends Component {
     this.modelViewer.animate();
   }
 
+  handleChangeMaterial(material) {
+    this.setState({ material });
+
+    if (!this.modelViewer) return;
+
+    this.modelViewer.changeMaterial(material);
+  }
+
   handleChangeModeledIn(ev) {
     const { value } = ev.target;
 
@@ -39,10 +50,10 @@ class ModelUploader extends Component {
 
     if (!this.modelViewer) return;
 
-    this.modelViewer.setModeledIn(value, (volume, area) => {
+    this.modelViewer.setModeledIn(value, (volume, area, dimensions) => {
       question.handleChange({ label: getVolumeLabel(volume, modeledIn), value: volume / 1000 });
 
-      this.setState({ area, volume });
+      this.setState({ area, dimensions, volume });
     });
   }
 
@@ -53,11 +64,12 @@ class ModelUploader extends Component {
     const { calculator, question } = this.props;
     const { modeledIn } = this.state;
 
-    this.modelViewer.openFile(file, (volume, area) => {
+    this.modelViewer.openFile(file, (volume, area, dimensions) => {
       question.handleChange({ label: getVolumeLabel(volume, modeledIn), value: volume / 1000 });
 
       this.setState({
         area,
+        dimensions,
         volume,
       });
     });
@@ -69,10 +81,11 @@ class ModelUploader extends Component {
 
   render() {
     const { calculator, question } = this.props;
-    const { area, modeledIn, volume } = this.state;
+    const { area, dimensions, material, modeledIn, volume } = this.state;
 
     const volumeLabel = getVolumeLabel(volume, modeledIn);
     const areaLabel = getAreaLabel(area, modeledIn);
+    const dimensionsLabel = getDimensionsLabel(dimensions);
 
     return (
       <Fragment>
@@ -93,7 +106,22 @@ class ModelUploader extends Component {
         <div
           ref={(c) => { this.modelViewerContainer = c; }}
           className="cc-3d__modelviewer-container"
-        />
+        >
+          <div className="cc-3d__modelviewer-actions">
+            <button
+              className={`cc-3d__button small ${material === 'solid' ? 'active': ''}`}
+              onClick={() => { this.handleChangeMaterial('solid'); }}
+            >
+              Solid
+            </button>
+            <button
+              className={`cc-3d__button small ${material === 'wireframe' ? 'active': ''}`}
+              onClick={() => { this.handleChangeMaterial('wireframe'); }}
+            >
+              Wireframe
+            </button>
+          </div>
+        </div>
 
         <div className="cc-3d__modeled-in-box">
           <label htmlFor="modeledIn">Parts modeled in:&nbsp;
@@ -109,11 +137,13 @@ class ModelUploader extends Component {
               <option value="ft">Feet</option>
             </select>
           </label>
-
         </div>
+
+
 
         {(volume || area) &&
           <div className="cc-3d__info-box">
+            {dimensions && <span>Material Volume: {dimensionsLabel} <br /></span>}
             {volume && <span>Material Volume: {volumeLabel} <br /></span>}
             {area && <span>Surface Area: {areaLabel} <br /></span>}
           </div>

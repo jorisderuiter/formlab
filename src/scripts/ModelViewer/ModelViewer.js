@@ -6,6 +6,19 @@ import { calculateArea, calculateVolume, loadStl, getConversion } from './helper
 class ModelViewer {
   constructor(el) {
     this.shouldBeModeledIn = 'mm';
+    this.objectModeledIn = 'mm';
+    this.materialName = 'solid';
+
+    this.materials = {
+      solid: new THREE.MeshPhongMaterial({
+        color: 0x697689,
+      }),
+      wireframe: new THREE.MeshBasicMaterial({
+        color: 0x697689,
+        wireframe: true
+      }),
+    }
+
     this.animate = this.animate.bind(this);
     this.openFile = this.openFile.bind(this);
     this.render = this.render.bind(this);
@@ -68,18 +81,7 @@ class ModelViewer {
 
       this.scene.remove(this.object);
 
-      const material = new THREE.MeshPhongMaterial({
-        color: 0x697689,
-      });
-      const wireframeMaterial = new THREE.LineBasicMaterial( {
-        color: 0xffffff,
-        linewidth: 2,
-      });
-
-      this.objectModeledIn = this.shouldBeModeledIn;
-      this.object = new THREE.Mesh(geometry, material);
-      const wireframe = new THREE.LineSegments( geometry, wireframeMaterial );
-      this.object.add(wireframe);
+      this.object = new THREE.Mesh(geometry, this.materials[this.materialName]);
 
       const volume = calculateVolume(this.object);
       const area = calculateArea(this.object);
@@ -91,7 +93,9 @@ class ModelViewer {
       this.container.classList.add('active');
 
       this.render();
-      callback(volume, area);
+
+      this.setObjectSize(callback);
+      //callback(volume, area);
     }, false);
     reader.readAsArrayBuffer(file);
   }
@@ -105,7 +109,21 @@ class ModelViewer {
   }
 
   calculateDimensions() {
-    return [this.object.geometry.min, this.object.geometry.max, this.object.geometry.getSize()];
+    if (!this.object) return [];
+
+    const box = new THREE.Box3().setFromObject(this.object);
+
+    return box.getSize();
+  }
+
+  changeMaterial(materialName) {
+    this.materialName = materialName;
+
+    if (!this.object) return;
+
+    this.object.material = this.materials[this.materialName];
+
+    this.render();
   }
 
   render() {
@@ -139,7 +157,6 @@ class ModelViewer {
 
   setObjectSize(callback) {
     if (!this.object || !this.shouldBeModeledIn) return;
-    if (this.shouldBeModeledIn === this.objectModeledIn) return;
 
     const conversion = getConversion(this.objectModeledIn, this.shouldBeModeledIn);
     const newScale = this.object.scale.x / conversion;
@@ -147,14 +164,17 @@ class ModelViewer {
     this.object.scale.set(newScale, newScale, newScale);
     this.objectModeledIn = this.shouldBeModeledIn;
 
+    console.log(this.calculateDimensions());
+
     const volume = calculateVolume(this.object);
     const area = calculateArea(this.object);
+    const dimensions = this.calculateDimensions();
 
     this.resetCameraPosition();
     this.render();
 
     if (typeof callback === 'function') {
-      callback(volume, area);
+      callback(volume, area, dimensions);
     }
   }
 }
