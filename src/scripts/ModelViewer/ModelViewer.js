@@ -15,7 +15,7 @@ class ModelViewer {
 
     this.container = el;
 
-    this.camera = new THREE.PerspectiveCamera(45, this.width / this.height, 1, 2000);
+    this.camera = new THREE.PerspectiveCamera(45, this.width / this.height, 0.1, 10000);
     this.camera.position.set(0, 0, 50);
 
     this.controls = new TrackballControls(this.camera, this.container);
@@ -115,18 +115,20 @@ class ModelViewer {
   resetCameraPosition() {
     if (!this.object) return;
 
+    this.controls.reset();
+
     const boundingBox = new THREE.Box3();
     boundingBox.setFromObject(this.object);
 
     const size = boundingBox.getSize();
 
-    const maxDim = Math.max( size.x, size.y, size.z ) * 1.1;
+    const maxDim = Math.max( size.x, size.y, size.z );
     const fov = this.camera.fov * ( Math.PI / 180 );
     const distance = Math.abs(maxDim / Math.tan(fov / 2));
 
     this.camera.position.z = distance;
-    this.camera.zoom = 1;
     this.camera.updateProjectionMatrix();
+
   }
 
   setModeledIn(shouldBeModeledIn, callback) {
