@@ -1,10 +1,11 @@
 import * as THREE from 'three';
 import TrackballControls from 'three-trackballcontrols';
 
-import { calculateArea, calculateVolume, loadStl } from './helpers';
+import { calculateArea, calculateVolume, loadStl, getConversion } from './helpers';
 
 class ModelViewer {
   constructor(el) {
+    this.shouldBeModeledIn = 'mm';
     this.animate = this.animate.bind(this);
     this.openFile = this.openFile.bind(this);
     this.render = this.render.bind(this);
@@ -19,11 +20,11 @@ class ModelViewer {
 
     this.controls = new TrackballControls(this.camera, this.container);
 
-    this.controls.rotateSpeed = 1.0;
-    this.controls.zoomSpeed = 1.2;
+    this.controls.rotateSpeed = 2;
+    this.controls.zoomSpeed = 2;
     this.controls.panSpeed = 0.8;
     this.controls.noZoom = false;
-    this.controls.noPan = false;
+    this.controls.noPan = true;
     this.controls.staticMoving = true;
     this.controls.dynamicDampingFactor = 0.3;
     this.controls.keys = [ 65, 83, 68 ];
@@ -75,6 +76,7 @@ class ModelViewer {
         linewidth: 2,
       });
 
+      this.objectModeledIn = this.shouldBeModeledIn;
       this.object = new THREE.Mesh(geometry, material);
       const wireframe = new THREE.LineSegments( geometry, wireframeMaterial );
       this.object.add(wireframe);
@@ -82,16 +84,7 @@ class ModelViewer {
       const volume = calculateVolume(this.object);
       const area = calculateArea(this.object);
 
-      const boundingBox = new THREE.Box3();
-      boundingBox.setFromObject(this.object);
-
-      const size = boundingBox.getSize();
-
-      const maxDim = Math.max( size.x, size.y, size.z ) * 1.1;
-      const fov = this.camera.fov * ( Math.PI / 180 );
-      const distance = Math.abs(maxDim / Math.tan(fov / 2));
-
-      this.camera.position.z = distance;
+      this.resetCameraPosition();
 
       this.scene.add(this.object);
 
@@ -103,12 +96,64 @@ class ModelViewer {
     reader.readAsArrayBuffer(file);
   }
 
+  calculateArea() {
+    return calculateArea(this.object);
+  }
+
   calculateVolume() {
-    return calculateVolume(this.object.geometry);
+    return calculateVolume(this.object);
+  }
+
+  calculateDimensions() {
+    return [this.object.geometry.min, this.object.geometry.max, this.object.geometry.getSize()];
   }
 
   render() {
     this.renderer.render( this.scene, this.camera );
+  }
+
+  resetCameraPosition() {
+    if (!this.object) return;
+
+    const boundingBox = new THREE.Box3();
+    boundingBox.setFromObject(this.object);
+
+    const size = boundingBox.getSize();
+
+    const maxDim = Math.max( size.x, size.y, size.z ) * 1.1;
+    const fov = this.camera.fov * ( Math.PI / 180 );
+    const distance = Math.abs(maxDim / Math.tan(fov / 2));
+
+    this.camera.position.z = distance;
+    this.camera.zoom = 1;
+    this.camera.updateProjectionMatrix();
+  }
+
+  setModeledIn(shouldBeModeledIn, callback) {
+    this.shouldBeModeledIn = shouldBeModeledIn;
+
+    this.setObjectSize(callback);
+  }
+
+  setObjectSize(callback) {
+    if (!this.object || !this.shouldBeModeledIn) return;
+    if (this.shouldBeModeledIn === this.objectModeledIn) return;
+
+    const conversion = getConversion(this.objectModeledIn, this.shouldBeModeledIn);
+    const newScale = this.object.scale.x / conversion;
+
+    this.object.scale.set(newScale, newScale, newScale);
+    this.objectModeledIn = this.shouldBeModeledIn;
+
+    const volume = calculateVolume(this.object);
+    const area = calculateArea(this.object);
+
+    this.resetCameraPosition();
+    this.render();
+
+    if (typeof callback === 'function') {
+      callback(volume, area);
+    }
   }
 }
 

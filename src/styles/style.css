@@ -25,6 +25,11 @@
   border: 1px solid rgb(244, 244, 244);
 }
 
+.cc-3d__modeled-in-box {
+  color: rgb(138, 138, 138);
+  margin: 1rem 0;
+}
+
 .cc-3d__info-box {
   color: rgb(138, 138, 138);
 }

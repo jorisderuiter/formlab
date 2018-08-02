@@ -130,7 +130,7 @@ const calculateFaceSignedVolume = (face, scale, vertices) => {
 }
 
 export const calculateVolume = (mesh) => {
-  if (!mesh) return 0;
+  if (!mesh || !mesh.geometry) return 0;
 
   const { geometry, scale } = mesh;
   const { faces, vertices } = geometry;
@@ -139,7 +139,7 @@ export const calculateVolume = (mesh) => {
     return volume + calculateFaceSignedVolume(face, scale, vertices);
   }, 0);
 
-  return Math.abs(volume) * 0.001;
+  return Math.abs(volume);
 }
 
 const calculateFaceArea = (face, scale, vertices) => {
@@ -164,5 +164,16 @@ export const calculateArea = (mesh) => {
     return area + calculateFaceArea(face, scale, vertices);
   }, 0);
 
-  return Math.abs(area) * 0.01;
+  return Math.abs(area);
+}
+
+export const getConversion = (fromScale, toScale) => {
+  const conversions = {
+    mm: 1,
+    cm: 0.1,
+    in: 0.0393700787,
+    ft: 0.0032808399,
+  }
+
+  return  conversions[toScale] / conversions[fromScale];
 }

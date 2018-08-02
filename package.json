@@ -15,6 +15,7 @@
     "babel-core": "^6.26.3",
     "babel-loader": "^7.1.4",
     "babel-preset-env": "^1.7.0",
+    "babel-preset-react": "^6.24.1",
     "clean-webpack-plugin": "^0.1.19",
     "css-loader": "^0.28.11",
     "extract-loader": "^2.0.1",
@@ -31,6 +32,8 @@
   },
   "dependencies": {
     "number-formatter": "^1.2.0",
+    "react": "^16.4.2",
+    "react-dom": "^16.4.2",
     "three": "^0.94.0",
     "three-trackballcontrols": "^0.0.7"
   }
