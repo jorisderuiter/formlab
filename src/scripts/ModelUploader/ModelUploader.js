@@ -8,7 +8,6 @@ class ModelUploader extends Component {
   constructor(props) {
     super(props);
 
-    this.handleAddFormula = this.handleAddFormula.bind(this);
     this.handleChangeModeledIn = this.handleChangeModeledIn.bind(this);
     this.handleInitModelViewer = this.handleInitModelViewer.bind(this);
     this.handeOnUploadModel = this.handeOnUploadModel.bind(this);
@@ -22,7 +21,6 @@ class ModelUploader extends Component {
 
   componentDidMount() {
     this.handleInitModelViewer();
-    this.handleAddFormula();
   }
 
   handleInitModelViewer() {
@@ -32,29 +30,18 @@ class ModelUploader extends Component {
     this.modelViewer.animate();
   }
 
-  handleAddFormula() {
-    const { calculator } = this.props;
-
-    calculator.addFormula({
-      _id: 'print-price-formula',
-      order: 0,
-      title: 'SLA 3D Print Price Calculator',
-      description: 'Complete the form to generate a price for printing your model. ',
-      equation: 'QA * QC * QB',
-      decimals: 2,
-      prefix: '£',
-      postfix: ' total (inc. VAT)',
-    });
-  }
-
   handleChangeModeledIn(ev) {
     const { value } = ev.target;
+
+    const { question } = this.props;
 
     this.setState({ modeledIn: value });
 
     if (!this.modelViewer) return;
 
     this.modelViewer.setModeledIn(value, (volume, area) => {
+      question.handleChange({ label: getVolumeLabel(volume, modeledIn), value: volume / 1000 });
+
       this.setState({ area, volume });
     });
   }
@@ -67,7 +54,7 @@ class ModelUploader extends Component {
     const { modeledIn } = this.state;
 
     this.modelViewer.openFile(file, (volume, area) => {
-      question.handleChange({ label: getVolumeLabel(volume, modeledIn), value: volume });
+      question.handleChange({ label: getVolumeLabel(volume, modeledIn), value: volume / 1000 });
 
       this.setState({
         area,
