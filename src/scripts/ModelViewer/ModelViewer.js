@@ -1,5 +1,7 @@
 import * as THREE from 'three';
-import TrackballControls from 'three-trackballcontrols';
+import CameraControls from 'camera-controls';
+
+CameraControls.install( { THREE: THREE } );
 
 import { calculateArea, calculateVolume, loadStl, getConversion } from './helpers';
 
@@ -31,17 +33,16 @@ class ModelViewer {
     this.camera = new THREE.PerspectiveCamera(45, this.width / this.height, 0.1, 10000);
     this.camera.position.set(0, 0, 50);
 
-    this.controls = new TrackballControls(this.camera, this.container);
+    this.controls = new CameraControls(this.camera, this.container);
 
     this.controls.rotateSpeed = 2;
     this.controls.zoomSpeed = 2;
-    this.controls.panSpeed = 0.8;
-    this.controls.noZoom = false;
-    this.controls.noPan = true;
+    this.controls.panSpeed = 2;
     this.controls.staticMoving = true;
-    this.controls.dynamicDampingFactor = 0.3;
-    this.controls.keys = [ 65, 83, 68 ];
-    this.controls.addEventListener( 'change', this.render );
+    this.controls.dampingFactor = 0.3;
+    this.controls.draggingDampingFactor = 0.3;
+
+    this.clock = new THREE.Clock();
 
     this.scene = new THREE.Scene();
     this.scene.background = new THREE.Color(0xffffff);
@@ -67,8 +68,14 @@ class ModelViewer {
   }
 
   animate() {
+    const delta = this.clock.getDelta();
+    const isControlsUpdated = this.controls.update(delta);
+
     requestAnimationFrame(this.animate);
-    this.controls.update();
+
+    if (isControlsUpdated) {
+      this.render();
+    }
   }
 
   openFile(file, callback) {
@@ -133,7 +140,7 @@ class ModelViewer {
   resetCameraPosition() {
     if (!this.object) return;
 
-    this.controls.reset();
+    this.controls.reset(false);
 
     const boundingBox = new THREE.Box3();
     boundingBox.setFromObject(this.object);
@@ -144,9 +151,7 @@ class ModelViewer {
     const fov = this.camera.fov * ( Math.PI / 180 );
     const distance = Math.abs(maxDim / Math.tan(fov / 2));
 
-    this.camera.position.z = distance;
-    this.camera.updateProjectionMatrix();
-
+    this.controls.dollyTo(distance, false);
   }
 
   setModeledIn(shouldBeModeledIn, callback) {
@@ -163,8 +168,6 @@ class ModelViewer {
 
     this.object.scale.set(newScale, newScale, newScale);
     this.objectModeledIn = this.shouldBeModeledIn;
-
-    console.log(this.calculateDimensions());
 
     const volume = calculateVolume(this.object);
     const area = calculateArea(this.object);

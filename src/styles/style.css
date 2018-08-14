@@ -47,6 +47,11 @@
   display: block;
 }
 
+.cc-3d__instructions {
+  color: rgb(138, 138, 138);
+  font-size: 0.75rem;
+}
+
 .cc-3d__modeled-in-box {
   color: rgb(138, 138, 138);
   margin: 1rem 0;

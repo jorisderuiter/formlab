@@ -16,6 +16,7 @@ class ModelUploader extends Component {
     this.state = {
       area: undefined,
       dimensions: { x: undefined, y: undefined, z: undefined },
+      isModalLoaded: false,
       material: 'solid',
       modeledIn: 'mm',
       volume: undefined,
@@ -70,6 +71,7 @@ class ModelUploader extends Component {
       this.setState({
         area,
         dimensions,
+        isModalLoaded: true,
         volume,
       });
     });
@@ -81,7 +83,7 @@ class ModelUploader extends Component {
 
   render() {
     const { calculator, question } = this.props;
-    const { area, dimensions, material, modeledIn, volume } = this.state;
+    const { area, dimensions, isModalLoaded, material, modeledIn, volume } = this.state;
 
     const volumeLabel = getVolumeLabel(volume, modeledIn);
     const areaLabel = getAreaLabel(area, modeledIn);
@@ -122,6 +124,10 @@ class ModelUploader extends Component {
             </button>
           </div>
         </div>
+
+        {isModalLoaded &&
+          <p className="cc-3d__instructions">Drag to rotate · Scroll to zoom right-click · Drag to pan</p>
+        }
 
         <div className="cc-3d__modeled-in-box">
           <label htmlFor="modeledIn">Parts modeled in:&nbsp;
