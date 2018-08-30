@@ -33,7 +33,7 @@ ccReady(() => {
       order: 0,
       title: 'SLA 3D Print Price Calculator',
       description: 'Complete the form to generate a price for printing your model. ',
-      equation: 'QA * QC * QB * (1 + QD) * 1.2 * IF(QB>10, 0.9, 1) - IF(QB > 1, (QB-1)*7.5, 0)',
+      equation: 'QA * QC * QB * (1 + QD) * IF(QB>10, 0.9, 1) - IF(QB > 1, (QB-1)*7.5, 0)',
       decimals: 2,
       prefix: '£',
       postfix: ' total (inc. VAT)',
