@@ -20,6 +20,8 @@ class ModelUploader extends Component {
       material: 'solid',
       modeledIn: 'mm',
       volume: undefined,
+      supportVolume: undefined,
+      totalVolume: undefined,
     }
   }
 
@@ -52,9 +54,7 @@ class ModelUploader extends Component {
     if (!this.modelViewer) return;
 
     this.modelViewer.setModeledIn(value, (volume, area, dimensions) => {
-      question.handleChange({ label: getVolumeLabel(volume, modeledIn), value: volume / 1000 });
-
-      this.setState({ area, dimensions, volume });
+      this.handleSetMeasurements(area, dimensions, volume);
     });
   }
 
@@ -62,18 +62,12 @@ class ModelUploader extends Component {
     const { files } = ev.target;
     const file = files[0];
 
-    const { calculator, question } = this.props;
+    const { calculator } = this.props;
     const { modeledIn } = this.state;
 
     this.modelViewer.openFile(file, (volume, area, dimensions) => {
-      question.handleChange({ label: getVolumeLabel(volume, modeledIn), value: volume / 1000 });
-
-      this.setState({
-        area,
-        dimensions,
-        isModalLoaded: true,
-        volume,
-      });
+      this.handleSetMeasurements(area, dimensions, volume);
+      this.setState({ isModalLoaded: true });
     });
 
     getBase64File(file, (base64File) => {
@@ -81,13 +75,35 @@ class ModelUploader extends Component {
     });
   }
 
+  handleSetMeasurements(area, dimensions, volume) {
+    const { question } = this.props;
+
+    const supportVolume = volume * 5;
+    const totalVolume = volume + supportVolume;
+
+    this.setState({
+      area,
+      dimensions,
+      volume,
+      supportVolume,
+      totalVolume,
+    });
+
+    question.handleChange({ label: getVolumeLabel(totalVolume, modeledIn), value: totalVolume / 1000 });
+  }
+
   render() {
     const { calculator, question } = this.props;
-    const { area, dimensions, isModalLoaded, material, modeledIn, volume } = this.state;
-
-    const volumeLabel = getVolumeLabel(volume, modeledIn);
-    const areaLabel = getAreaLabel(area, modeledIn);
-    const dimensionsLabel = getDimensionsLabel(dimensions);
+    const {
+      area,
+      dimensions,
+      isModalLoaded,
+      material,
+      modeledIn,
+      supportVolume,
+      totalVolume,
+      volume,
+    } = this.state;
 
     return (
       <Fragment>
@@ -145,13 +161,13 @@ class ModelUploader extends Component {
           </label>
         </div>
 
-
-
         {(volume || area) &&
           <div className="cc-3d__info-box">
-            {dimensions && <span>Material Volume: {dimensionsLabel} <br /></span>}
-            {volume && <span>Material Volume: {volumeLabel} <br /></span>}
-            {area && <span>Surface Area: {areaLabel} <br /></span>}
+            {dimensions && <span>Material dimensions: {getDimensionsLabel(dimensions)} <br /></span>}
+            {volume && <span>Material Volume: {getVolumeLabel(volume, modeledIn)} <br /></span>}
+            {supportVolume && <span>Support Volume: {getVolumeLabel(supportVolume, modeledIn)} <br /></span>}
+            {totalVolume && <span>Total Volume: {getVolumeLabel(totalVolume, modeledIn)} <br /></span>}
+            {area && <span>Surface Area: {getAreaLabel(area, modeledIn)} <br /></span>}
           </div>
         }
       </Fragment>
