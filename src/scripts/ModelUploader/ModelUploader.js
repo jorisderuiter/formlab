@@ -47,8 +47,6 @@ class ModelUploader extends Component {
   handleChangeModeledIn(ev) {
     const { value } = ev.target;
 
-    const { question } = this.props;
-
     this.setState({ modeledIn: value });
 
     if (!this.modelViewer) return;
@@ -62,7 +60,7 @@ class ModelUploader extends Component {
     const { files } = ev.target;
     const file = files[0];
 
-    const { calculator } = this.props;
+    const { onAddFormData } = this.props;
     const { modeledIn } = this.state;
 
     this.modelViewer.openFile(file, (volume, area, dimensions) => {
@@ -71,12 +69,12 @@ class ModelUploader extends Component {
     });
 
     getBase64File(file, (base64File) => {
-      calculator.addFormData('STL File', [base64File]);
+      onAddFormData('STL File', [base64File]);
     });
   }
 
   handleSetMeasurements(area, dimensions, volume) {
-    const { question } = this.props;
+    const { onSetAnswer } = this.props;
 
     const supportVolume = volume * 5;
     const totalVolume = volume + supportVolume;
@@ -89,11 +87,10 @@ class ModelUploader extends Component {
       totalVolume,
     });
 
-    question.handleChange({ label: getVolumeLabel(totalVolume, modeledIn), value: totalVolume / 1000 });
+    onSetAnswer({ label: getVolumeLabel(totalVolume, modeledIn), value: totalVolume / 1000 });
   }
 
   render() {
-    const { calculator, question } = this.props;
     const {
       area,
       dimensions,
